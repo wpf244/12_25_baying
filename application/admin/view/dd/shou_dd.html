@@ -88,8 +88,7 @@
                   <th>订单总金额</th>
                   <th>下单时间</th>
                   <th>发货时间</th>
-                  <th>配送方式</th>
-                  <th>预约配送时间</th>
+                
                   <th>收货人信息</th>
                   <th style="border-right:#ddd solid 1px;">操作</th>
                 </tr>
@@ -103,8 +102,7 @@
                   
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
                   <td>{$v.f_time|date="Y-m-d H:i:s",###}</td>
-                  <td>{if condition="$v.p_type eq 0"}立即送达 {else /}预约配送{/if}</td>
-                  <td>{$v.p_time}</td>
+                 
                   <th>
                                                          收货人姓名：{$v.username}<br>
                                                          收货人电话：{$v.phone}<br>
@@ -133,19 +131,7 @@
     </div>
   </div><!-- /.main-content -->
 
-  <div class="footer">
-  <div class="footer-inner">
-    <div class="footer-content">
-						<span class="bigger-110">
-							<span class="blue bolder">Ace</span>
-							朵朵科技CMS &copy; 2018-2020
-						</span>
-
-      &nbsp; &nbsp;
-      <a href="http://www.dd371.com" target="_blank">技术支持: 朵朵科技</a>
-    </div>
-  </div>
-</div>
+  {include file="public:footer"}
 
 <a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
   <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>

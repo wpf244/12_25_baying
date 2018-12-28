@@ -287,6 +287,40 @@ class Dd extends BaseAdmin
                 $dels=db("car_dd")->where("code='$v'")->setField("status",1);
             }
             
+            $moneys=$re['zprice'];
+            //公益金
+            $fund=($moneys/100*1);
+            db("fund")->where("id=1")->setInc("money",$fund);
+            //分红比例
+            $cobber=db("cobber")->where("id=2")->find();
+            $agio=$cobber['rabate'];
+            //分红金额
+            $money=($moneys/100*$agio);
+
+            //查询平台总股数
+            $shares=db("user")->sum("money");
+            
+            if($shares != 0){
+                //每股应返多少
+                $one=($money/$shares);
+                //查询用户的总股数
+                $user=db("user")->where("money > 0")->select();
+                if($user){
+                    foreach($user as $k => $v){
+                         $new_shares=($v['money']*$one);
+                         db("user")->where("uid={$v['uid']}")->setInc("money",$new_shares);
+
+                         //增加分红日志
+                         $data['u_id']=$v['uid'];
+                         $data['money']=$new_shares;
+                         $data['time']=time();
+                         db("money_log")->insert($data);
+                    }
+                }
+           
+            }
+
+
             $this->redirect("dai_dd");
         }else{
             $this->redirect("dai_dd");
