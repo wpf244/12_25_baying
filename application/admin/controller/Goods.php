@@ -78,9 +78,9 @@ class Goods extends BaseAdmin{
         if(!is_string(input('g_image'))){
             $data['g_image']=uploads('g_image');
 
-            $data['g_images']='uploads/thumb/'.uniqid('',true).'.jpg';
-            $image = \think\Image::open(request()->file('g_image'));
-            $image->thumb(104,104,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['g_images']);
+            // $data['g_images']='/uploads/thumb/'.uniqid('',true).'.jpg';
+            // $image = \think\Image::open(request()->file('g_image'));
+            // $image->thumb(104,104,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['g_images']);
         }
        
         if(input('g_status')){
@@ -242,9 +242,9 @@ class Goods extends BaseAdmin{
         if($re){
             if(!is_string(input('g_image'))){
                 $data['g_image']=uploads('g_image');
-                $data['g_images']='uploads/thumb/'.uniqid('',true).'.jpg';
-                $image = \think\Image::open(request()->file('image'));
-                $image->thumb(104,104,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['g_images']);
+                // $data['g_images']='uploads/thumb/'.uniqid('',true).'.jpg';
+                // $image = \think\Image::open(request()->file('image'));
+                // $image->thumb(104,104,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['g_images']);
             }else{
                 $data['g_image']=$re['g_image'];
             }
@@ -313,9 +313,9 @@ class Goods extends BaseAdmin{
             $re=db('goods_img')->where("id=$id")->find();
             if(!is_string(input('image'))){
                 $data['image']=uploads("image");
-                $data['thumb']='uploads/thumb/'.uniqid('',true).'.jpg';
-               $image = \think\Image::open(request()->file('image'));
-               $image->thumb(414,414,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['thumb']);
+            //     $data['thumb']='uploads/thumb/'.uniqid('',true).'.jpg';
+            //    $image = \think\Image::open(request()->file('image'));
+            //    $image->thumb(414,414,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['thumb']);
             }else{
                 $data['image']=$re['image'];
             }
@@ -334,9 +334,9 @@ class Goods extends BaseAdmin{
             $data=input('post.');
             if(!is_string(input('image'))){
                 $data['image']=uploads("image");
-                $data['thumb']='uploads/thumb/'.uniqid('',true).'.jpg';
-               $image = \think\Image::open(request()->file('image'));
-               $image->thumb(414,414,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['thumb']);
+            //     $data['thumb']='uploads/thumb/'.uniqid('',true).'.jpg';
+            //    $image = \think\Image::open(request()->file('image'));
+            //    $image->thumb(414,414,\think\Image::THUMB_CENTER)->save(ROOT_PATH.'/public/'.$data['thumb']);
             }
             if(input('i_status')){
                 $data['i_status']=1;

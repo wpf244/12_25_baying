@@ -22,6 +22,7 @@ class Login extends BaseHome
             if($rea){
                 $arr=[
                     'error_code'=>0,
+                    'code'=>$code,
                     'data'=>'发送成功'
                 ];
             }else{

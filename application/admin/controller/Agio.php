@@ -1,6 +1,7 @@
 <?php
 namespace app\admin\controller;
 
+use think\Request;
 class Agio extends BaseAdmin
 {
     public function lister()
@@ -77,6 +78,36 @@ class Agio extends BaseAdmin
         $id=input('id');
         $re=db('level')->where("id=$id")->find();
         echo json_encode($re);
+    }
+
+    /**
+     * 推荐奖励金
+     *
+     * @return void
+     */
+    public function bonus(){
+        $bonus = db("cobber")->where("id",3)->find();
+        if(!$bonus){
+            db("cobber")->insert(['id'=>3, 'rabate'=>5]);
+            $bonus = db("cobber")->where("id",3)->find();
+        }
+        $this->assign("re",$bonus);
+        return $this->fetch();
+    }
+
+    /**
+     * 修改奖励金百分比
+     *
+     * @return void
+     */
+    public function bonus_modify(){
+        $rabate = Request::instance()->param('rabate', 5);
+        $res = db("cobber")->where("id", 3)->update(['rabate'=>$rabate]);
+        if($res){
+            $this->success("修改成功！");
+        }else{
+            $this->error("修改失败！");
+        }
     }
 
 }

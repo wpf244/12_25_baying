@@ -1,20 +1,196 @@
 <?php
 namespace app\admin\controller;
 
+use think\Request;
 class Member extends BaseAdmin
 {
     public function lister()
     {
         $list=db("user")->order("uid desc")->paginate(10);
-        $this->assign("list",$list);
-      
+        
+        $res = [];
+        foreach($list as $v){
+            $v['pid_user'] = db("user")->where("uid", $v['fid'])->value('nickname');
+            $res[] = $v;
+        }
+        $this->assign("list",$res);
         $page=$list->render();
         $this->assign("page",$page);   
-
-      
-
         return $this->fetch();
     }
+
+/**
+     * 等级调整
+     *
+     * @return void
+     */
+    public function level_change(){
+        $type = Request::instance()->param('type', '');
+        $uid = Request::instance()->param('uid', 0);
+        $user = db('user')->where('uid', $uid)->find();
+        if($type == 'up'){
+            if($user['level'] == 2){
+                return array('status'=>-1, 'data'=>array(), 'msg'=>'已经是最高等级了');
+            }
+            $res = db('user')->where('uid', $uid)->setInc('level');
+        }elseif($type == 'down'){
+            if($user['level'] == 0){
+                return array('status'=>-1, 'data'=>array(), 'msg'=>'已经是最低等级了');
+            }
+            $res = db('user')->where('uid', $uid)->setDec('level');
+        }
+        if($res){
+            $level = db('user')->where('uid', $uid)->value('level');
+            if($level == 1){
+                $level_name = '一级合伙人';
+            }elseif($level == 2){
+                $level_name = '二级合伙人';
+            }else{
+                $level_name = '普通会员';
+            }
+            return array('status'=>1, 'data'=>array('level_name'=>$level_name), 'msg'=>'操作成功');
+        }else{
+            return array('status'=>1, 'data'=>array(), 'msg'=>'操作失败');
+        }
+    }
+
+    /**
+     * 修改奖励金
+     *
+     * @return void
+     */
+    public function change_bonus(){
+        $id = Request::instance()->param('id', 0);
+        $bonus = Request::instance()->param('bonus', -1);
+        if($id == 0 || $bonus == -1){
+            echo '0';
+            return;
+        }
+        $res = db('user')->where('uid', $id)->setField('bonus', $bonus);
+        if($res){
+            echo "1";
+        }else{
+            echo "0";
+        }
+    }
+
+    /**
+     * 修改股数
+     *
+     * @return void
+     */
+    public function change_money(){
+        $id = Request::instance()->param('id', 0);
+        $money = Request::instance()->param('money', -1);
+        if($id == 0 || $money == -1){
+            echo '0';
+            return;
+        }
+        $res = db('user')->where('uid', $id)->setField('money', $money);
+        if($res){
+            echo "1";
+        }else{
+            echo "0";
+        }
+    }
+
+    /**
+     * 股权日志
+     *
+     * @return void
+     */
+    public function money_log(){
+        $id = Request::instance()->param('id', 0);
+        $user = db('user')->where('uid', $id)->find();
+        $list = db("money_log")->where('u_id', $id)->paginate(10);
+        $this->assign('list', $list);
+        $this->assign('user', $user);
+        return $this->fetch();
+    }
+
+    /**
+     * 奖励金日志
+     *
+     * @return void
+     */
+    public function bonus_log(){
+        $id = Request::instance()->param('id', 0);
+        $user = db('user')->where('uid', $id)->find();
+        $list = db("bonus_log")->where('u_id', $id)->paginate(10);
+        $this->assign('list', $list);
+        $this->assign('user', $user);
+        return $this->fetch();
+    }
+
+    /**
+     * 奖励金提现
+     *
+     * @return void
+     */
+    public function balance(){
+        $wx_account = Request::instance()->param('wx_account', '');
+        $wx_nickname = Request::instance()->param('wx_nickname', '');
+        $status = Request::instance()->param('status', '-1');
+        $start = Request::instance()->param('start', '');
+        $end = Request::instance()->param('end', '');
+        $map = [];
+        if($status != -1){
+            $map['status'] = $status;
+        }
+        if($wx_account != ''){
+            $map['wx_account'] = array('like', '%'.$wx_account.'%');
+        }
+        if($wx_nickname != ''){
+            $map['wx_nickname'] = array('like', '%'.$wx_nickname.'%');
+        }
+        if($start != '' && $end != ''){
+            $map['c.time'] = array(array('egt',strtotime($start)),array('elt',strtotime($end.' 23:55:55')),'AND');
+        }elseif($start == '' && $end != ''){
+            $map['c.time'] = array('elt',strtotime($end.' 23:55:55'));
+        }elseif($start != '' && $end == ''){
+            $map['c.time'] = array('egt',strtotime($start));
+        }
+        $list = db("bonus_withdrow")->alias('c')
+        ->field('u.nickname, u.image, c.id, c.uid, c.money, c.wx_nickname, c.wx_account, c.status, c.time')
+        ->join('user u','u.uid=c.uid')->where($map)->order('c.time desc')->paginate(10,false,['query'=>request()->param()]);
+
+        $this->assign('wx_account', $wx_account);
+        $this->assign('wx_nickname', $wx_nickname);
+        $this->assign('status', $status);
+        $this->assign('start', $start);
+        $this->assign('end', $end);
+        $this->assign('list', $list);
+        return $this->fetch('balance');
+    }
+
+    /**
+     * 奖励金状态
+     *
+     * @return void
+     */
+    public function balance_status(){
+        $id = Request::instance()->param('id');
+        $ftype = Request::instance()->param('ftype');
+        db("bonus_withdrow")->where('id', $id)->setField('status', $ftype);
+        $user = db("bonus_withdrow")->where('id', $id)->find();
+        if($ftype == 3){
+            //驳回，返回余额
+            db("user")->where('uid', $user['uid'])->setInc('bonus', $user['money']);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function change()
     {
         $id=input('id');

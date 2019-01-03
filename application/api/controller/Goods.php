@@ -10,11 +10,12 @@ class Goods extends BaseHome
     {
         $type_id=\input('type_id');
              
-        $res=db("goods")->field('gid,g_images')->where("fid=$type_id and g_up=1")->order("g_sales desc")->select();
+        $res=db("goods")->field('gid,g_image,g_name')->where("fid=$type_id and g_up=1")->order("g_sales desc")->select();
         if($res){
             foreach ($res as $k=>$v){
                 $url=parent::getUrl();
-                $res[$k]['g_images']=$url.$v['g_images'];
+                $res[$k]['g_images']=$url.$v['g_image'];
+                $res[$k]['g_name']=$v['g_name'];
             }
             $arr=[
                 'error_code'=>0,
@@ -202,7 +203,7 @@ class Goods extends BaseHome
                 $re['banner'][$k]=$url.$v['image'];
             }
         }else{
-            $re['banner']=$re['g_image'];
+            $re['banner']=array($re['g_image']);
         }
 
         //商品规格
@@ -210,7 +211,7 @@ class Goods extends BaseHome
         if($spec){
             $re['spec']=$spec;
         }else{
-            $re['spec']="暂无规格";
+            $re['spec']=array();
         }
         
         //商品评价
@@ -227,7 +228,7 @@ class Goods extends BaseHome
         }else{
             $re['assess']=[
                 'count'=>$count,
-                'content'=>"暂无评论"
+                'content'=>array()
             ];
         }
         

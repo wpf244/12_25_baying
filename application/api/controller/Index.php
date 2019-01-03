@@ -12,7 +12,7 @@ class Index extends BaseHome
         //首页轮播
         $lb=db("lb")->field('id,url,image,thumb')->where("fid=1 and status=1")->order(['sort asc','id desc'])->select();
         foreach ($lb as $k => $v){
-            $lb[$k]['image']=$url.$v['thumb'];
+            $lb[$k]['image']=$url.$v['image'];
             unset($lb[$k]['thumb']);
         }
         

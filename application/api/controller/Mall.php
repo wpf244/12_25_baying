@@ -56,7 +56,7 @@ class Mall extends BaseHome
     public function detail()
     {
         $gid=\input('gid');
-        $re=db("mall")->field("mcontent as content")->where("mid=$gid")->find();
+        $re=db("mall")->where("mid=$gid")->find();
         if($re){
             $arr=[
                 'error_code'=>0,
@@ -221,10 +221,11 @@ class Mall extends BaseHome
                 $arrs=array();
                 $url=parent::getUrl();
                 foreach ($res as $k => $v){
+                    $arrs[$k]['did']=$v['id'];
                     $arrs[$k]['g_name']=$v['mname'];
                     $arrs[$k]['integ']=$v['minteg'];
                     $arrs[$k]['time']=\intval($v['time']);
-                    $arrs[$k]['status']=$v['status'];
+                    $arrs[$k]['status']=$v['m_status'];
                 }
                 
                 $arr=[

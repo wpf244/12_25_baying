@@ -44,17 +44,15 @@
               <table class="table table-bordered table-hover">
                 <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>会员编号</th>                  
+                  <th>ID</th>           
                   <th class="hidden-480">会员名</th>
-                  <th class="hidden-480">级别</th>
                   <th class="hidden-480">手机号码</th>
-                  <th class="hidden-480">微信号</th>
-                  <th class="hidden-480">支付宝号</th>
-                  <th class="hidden-480">推荐人</th>
+                  <th class="hidden-480">头像</th>
+                  <th class="hidden-480">股数</th>
+                  <th class="hidden-480">奖励金</th>
+                  <th class="hidden-480">等级</th>
+                  <th class="hidden-480">上级会员</th>
                   <th class="hidden-480">注册时间</th>
-                  <th class="hidden-480">是否激活</th>
-                  <th class="hidden-480">激活时间</th>
                   <th style="border-right:#ddd solid 1px;">操作</th>
                 </tr>
                 </thead>
@@ -63,27 +61,40 @@
                 <tr class="ace-thumbnails">
               
                   <td><span class="badge badge-grey">{$v.uid}</span></td>
-                  <td>{$v.u_code}</td>
-                  <td>{$v.u_name}</td>
-                  <td>{$v.level}</td>
-                  <td class="hidden-480">{$v.u_phone}</td>
-                  <td class="hidden-480">{$v.u_wx}</td>
-                  <td class="hidden-480">{$v.u_alipay}</td>
-                  <?php $pid=$v['pid']; $user=db("user")->where("uid=$pid")->find();?>
-                  <td class="hidden-480">{$user['u_name']}</td>
-                  <td class="hidden-480">{$v.u_ztime|date="Y-m-d H:i:s",###}</td>
-                  <td>
-                     <div onclick="change({$v.uid},{$v.u_status})"> {if condition="$v.u_status eq 1" }<a  class="btn btn-xs btn-info">是</a> {else /} <a class="btn btn-xs btn-danger">否</a>{/if}</div>
+                  <td>{$v.nickname}</td>
+                  <td>{$v.phone}</td>
+                  <td class="ace-thumbnails hidden-480">
+                    <li><a href="{$v.image}" data-rel="colorbox">
+                      <img width="80" height="80" alt="150x150" src="{$v.image}"/>
+                      <div class="text">
+                        <div class="inner">点击放大</div>
+                      </div>
+                    </a></li>
                   </td>
-                  <td class="hidden-480">{if condition="$v.u_jtime neq '' "}{$v.u_jtime|date="Y-m-d H:i:s",###}{/if}</td>
+                  <td>{$v.money}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
+                  <td class="hidden-480">{$v.bonus}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_bonus({$v.uid})"></i></td>
+                  <td class="hidden-480">
+                      <i class="ace-icon fa fa-chevron-circle-down bigger-120" onclick="level_change('down', {$v.uid})"></i>
+                      <span id="level{$v.uid}">
+                          {if condition="$v.level == 1"}一级合伙人{elseif condition="$v.level == 2"}二级合伙人{else /}普通会员{/if}
+                      </span>
+                      <i class="ace-icon fa fa-chevron-circle-up bigger-120" onclick="level_change('up', {$v.uid})"></i>
+                  </td>
+                  <td class="hidden-480">{$v.pid_user}</td>
+                  <td class="hidden-480">{$v.time|date="Y-m-d H:i:s",###}</td>
                   <td>
-                    
-                    <a class="btn btn-xs btn-info" href="{:url('Member/modifys',array('id'=>$v['uid']))}" title="修改">
+                      <a class="btn btn-xs btn-info" href="{:url('Member/money_log',array('id'=>$v['uid']))}" title="股权日志">
+                        股权日志
+                      </a>
+                      <a class="btn btn-xs btn-info" href="{:url('Member/bonus_log',array('id'=>$v['uid']))}" title="奖励金日志">
+                        奖励金日志
+                      </a>
+                    <!-- <a class="btn btn-xs btn-info" href="{:url('Member/modifys',array('id'=>$v['uid']))}" title="修改">
                       <i class="ace-icon fa fa-pencil bigger-120"></i>
                     </a>
                     <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.uid})" title="删除">
                       <i class="ace-icon fa fa-trash-o bigger-120"></i>
-                    </button>
+                    </button> -->
                   </td>
                 </tr>
                 {/volist}
@@ -147,6 +158,91 @@
           })
 		  });
 	    }
+
+      function level_change(type, uid){
+      $.ajax({
+        url: "{:url('Member/level_change')}",
+        type: "post",
+        data: {type: type, uid: uid},
+        success: function(data){
+          if(data.status == 1){
+            $("#level"+uid).html(data.data['level_name']);
+          }else{
+            layer.msg(data.msg);
+          }
+        }
+      })
+    }
+
+    function change_bonus(id) {
+      layer.prompt({
+        title: '请输入调整后的奖励金',
+        formType: 3
+      }, function (text, index) {
+        var n = /^[1-9]\d*$/;
+        if (!n.test(text)) {
+          layer.alert('请输入正确数值的奖励金');
+          return false;
+        } else {
+          $.ajax({
+            type: "post",
+            url: "__URL__/change_bonus",
+            data: {
+              id: id,
+              bonus: text
+            },
+            datatype: "text",
+            success: function (re) {
+              if (re == 1) {
+                layer.close(index);
+                layer.msg("调整成功");
+                location.reload();
+              } else {
+                layer.close(index);
+                layer.msg("系统繁忙，请稍后再试");
+                location.reload();
+              }
+
+            }
+          })
+        }
+      })
+    }
+
+    function change_money(id) {
+      layer.prompt({
+        title: '请输入调整后的股数',
+        formType: 3
+      }, function (text, index) {
+        var n = /^[1-9]\d*$/;
+        if (!n.test(text)) {
+          layer.alert('请输入正确数值的奖励金');
+          return false;
+        } else {
+          $.ajax({
+            type: "post",
+            url: "__URL__/change_money",
+            data: {
+              id: id,
+              money: text
+            },
+            datatype: "text",
+            success: function (re) {
+              if (re == 1) {
+                layer.close(index);
+                layer.msg("调整成功");
+                location.reload();
+              } else {
+                layer.close(index);
+                layer.msg("系统繁忙，请稍后再试");
+                location.reload();
+              }
+
+            }
+          })
+        }
+      })
+    }
 		</script>
 <script>
 function change(id,status){

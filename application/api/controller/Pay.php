@@ -12,8 +12,8 @@ class Pay extends Controller
     public function getopenid()
     {
         $code=\input('code');
-        $appid="wx5e58284464f622f8";
-        $secret="99a486bd8578692121f8774784cec6ca";
+        $appid="wxcde9f11cf93da5ba";
+        $secret="18bayingshangmaohuizhongchuangda";
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=".$appid."&secret=".$secret."&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
         \var_dump($results);exit;
@@ -41,6 +41,8 @@ class Pay extends Controller
         $input->SetTotal_fee("$money");
         $input->SetNotify_url("https://by.dd371.com/Api/Pay/notify/");
         $input->SetTrade_type("JSAPI");
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
         //     由小程序端传给服务端
         $input->SetOpenid($openid);
         //     向微信统一下单，并返回order，它是一个array数组
@@ -96,15 +98,14 @@ class Pay extends Controller
                     //公益金
                     $fund=($moneys/100*1);
                     db("fund")->where("id=1")->setInc("money",$fund);
+
                     //分红比例
                     $cobber=db("cobber")->where("id=2")->find();
                     $agio=$cobber['rabate'];
                     //分红金额
                     $money=($moneys/100*$agio);
-
                     //查询平台总股数
-                    $shares=db("user")->sum("money");
-                    
+                    $shares=db("user")->sum("money"); 
                     if($shares != 0){
                         //每股应返多少
                         $one=($money/$shares);
@@ -122,7 +123,6 @@ class Pay extends Controller
                                 db("money_log")->insert($data);
                             }
                         }
-                
                     }
                 }
             }
@@ -147,6 +147,8 @@ class Pay extends Controller
         $input->SetTotal_fee("$money");
         $input->SetNotify_url("https://by.dd371.com/Api/Pay/notify_info/");
         $input->SetTrade_type("JSAPI");
+        $input->SetTime_start(date("YmdHis"));
+        $input->SetTime_expire(date("YmdHis", time() + 600));
         //     由小程序端传给服务端
         $input->SetOpenid($openid);
         //     向微信统一下单，并返回order，它是一个array数组
@@ -193,6 +195,22 @@ class Pay extends Controller
                 $arrs['time']=time();
                 db("money_log")->insert($arrs);
 
+               //给上级会员5%奖励金
+               if($reu['fid'] != 0){
+                    $f_user = db("user")->where("uid", $reu['fid'])->find();
+                    if($f_user){
+                        //获取系统设置
+                        $bonus_set = db("cobber")->where("id", 3)->find();
+                        if($bonus_set){
+                            $bonus = $bonus_set/100;
+                        }else{
+                            $bonuse = 0.05;
+                        }
+                        $add_bonus = $re['money']*$bonuse;
+                        db("user")->where("uid", $reu['fid'])->setInc('bonus', $add_bonus);
+                        db("bonus_log")->insert(['u_id'=>$f_user['uid'], 'bonus'=>$add_bonus, 'time'=>time(), 'status'=>1]);
+                    }
+               }
                
             }
         }

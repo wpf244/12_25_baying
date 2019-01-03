@@ -2,6 +2,7 @@
 namespace app\api\controller;
 
 use think\Request;
+use think\Db;
 
 class User extends BaseHome
 {
@@ -115,9 +116,13 @@ class User extends BaseHome
         if($uid){
             $aid=input("aid");
             $re=db("addr")->where("u_id=$uid and aid=$aid")->find();
+            $default = db("addr")->where("u_id", $uid)->where('default', 1)->find();
             if($re){
-                $res=db("addr")->where("aid=$aid")->setField("status",1);
+                $res=db("addr")->where("aid=$aid")->setField("default",1);
                 if($res){
+                    if($default){
+                        db("addr")->where("aid", $default['aid'])->setField("default",0);
+                    }
                     $arr=[
                         'error_code'=>0,
                         'data'=>'修改成功'
@@ -150,7 +155,7 @@ class User extends BaseHome
             $data=\input('post.');
             $re=db("addr")->where("u_id=$uid")->find();
             if(empty($re)){
-                $data['status']=1;
+                $data['default']=1;
             }
             $data['u_id']=$uid;
             $rea=db('addr')->insert($data);
@@ -182,6 +187,23 @@ class User extends BaseHome
     {
         $aid=\input('aid');
         $re=db('addr')->where("aid=$aid")->find();
+        if($re){
+            $arr=[
+                'error_code'=>0,
+                'data'=>$re
+            ];
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'暂无数据'
+            ];
+        }
+        echo \json_encode($arr);
+    }
+    //默认收货地址
+    public function addr_default(){
+        $uid=Request::instance()->header('uid');
+        $re=db('addr')->where("u_id", $uid)->where("default",1)->find();
         if($re){
             $arr=[
                 'error_code'=>0,
@@ -644,7 +666,8 @@ class User extends BaseHome
     //获取用户信息
     public function make(){
         $code=input('code');
-        $url="https://api.weixin.qq.com/sns/jscode2session?appid=wx5e58284464f622f8&secret=99a486bd8578692121f8774784cec6ca&js_code=".$code."&grant_type=authorization_code";
+        $data['fid'] = Request::instance()->param('fid', 0);
+        $url="https://api.weixin.qq.com/sns/jscode2session?appid=wxcde9f11cf93da5ba&secret=8d6c6d3e4ff79f7008d51352d6ae0d4b&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
       //  \var_dump($results);exit;
         $openid=$results['openid'];
@@ -693,15 +716,204 @@ class User extends BaseHome
         echo \json_encode($arr);
     }
     
+    /**
+     * 代言名片
+     *
+     * @return void
+     */
+    public function card(){
+        $uid = Request::instance()->header('uid');
+        $user = db('user')->where('uid', $uid)->find();
+        if($user['card'] != ''){
+            $url = parent::getUrl().'/'.$user['card'];
+        }else{
+            $url = '';
+        }
+        $arr=[
+            'error_code'=>1,
+            'data'=>$url
+        ];
+        echo \json_encode($arr);
+    }
+
+    /**
+     * 获取小程序二维码
+     *
+     * @return void
+     */
+    public function getqrcode(){
+        //接收参数
+        $uid = Request::instance()->header('uid');
+        $scene = Request::instance()->param('scene', 0);
+        $page = Request::instance()->param('page', '');
+        //微信token
+        $appid = 'wxcde9f11cf93da5ba';
+        $secret = '8d6c6d3e4ff79f7008d51352d6ae0d4b';
+        $url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$appid."&secret=".$secret;
+        $results=json_decode(file_get_contents($url)); 
+        //请求二维码的二进制资源
+        $post_data='{"scene":"'.$scene.'", "page":"'. $page .'"}';
+        $res_url="https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=".$results->access_token;
+        $result=$this->httpRequest($res_url,$post_data,'POST');
+        //转码为base64格式并本地保存
+        $base64_image ="data:image/jpeg;base64,".base64_encode($result);
+        $path = 'uploads/'.uniqid().'.jpg';
+        $res = $this->file_put($base64_image, $path);
+        //业务处理
+        if($res){
+            db('user')->where('uid', $uid)->update(['card'=>$path]);
+            $url_res=parent::getUrl();
+            $arr=[
+                'error_code'=>1,
+                'data'=>$url_res.'/'.$path,
+                'msg'=>'生成成功'
+            ];
+        }else{
+            $arr=[
+                'error_code'=>2,
+                'data'=>'',
+                'msg'=>'生成失败'
+            ];
+        }
+        echo \json_encode($arr);
+    }
+
+    /**
+     * 图片保存
+     *
+     * @param [type] $base64_image_content base64格式图片资源
+     * @param [type] $new_file 保存的路径，文件夹必须存在
+     * @return void
+     */
+    public function file_put($base64_image_content,$new_file)
+    {
+        header('Content-type:text/html;charset=utf-8');
+        if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $base64_image_content, $result)){
+            if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))){
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+
+    /**
+     * curl函数网站请求封装函数
+     *
+     * @param [type] $url 请求地址
+     * @param string $data 数据
+     * @param string $method 请求方法
+     * @return void
+     */
+    function httpRequest($url, $data='', $method='GET'){
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($curl, CURLOPT_AUTOREFERER, 1);
+        if($method=='POST')
+        {
+            curl_setopt($curl, CURLOPT_POST, 1);
+            if ($data != '')
+            {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+            }
+        }
+     
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_HEADER, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($curl);
+        curl_close($curl);
+        return $result;
+    }
     
+    /**
+     * 股权日志
+     *
+     * @return void
+     */
+    public function money_log(){
+        $uid=Request::instance()->header('uid');
+        if($uid){
+            $res = db("money_log")->where("u_id", $uid)->select();
+            $arr=[
+                'error_code'=>0,
+                'data'=>$res
+            ];
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'没有登录'
+            ];
+        }
+        echo \json_encode($arr);
+    }
     
+    /**
+     * 奖励金日志
+     *
+     * @return void
+     */
+    public function bonus_log(){
+        $uid=Request::instance()->header('uid');
+        if($uid){
+            $res = db("bonus_log")->where("u_id", $uid)->select();
+            $arr=[
+                'error_code'=>0,
+                'data'=>$res
+            ];
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'没有登录'
+            ];
+        }
+        echo \json_encode($arr);
+    }
     
+    /**
+     * 奖励金提现
+     *
+     * @return void
+     */
+    public function bonus_withdrow(){
+        $uid=Request::instance()->header('uid');
+        if(!$uid){
+            return json_encode(array('error_code'=>1,'data'=>'没有登录'));
+        }
+        $money = Request::instance()->param('money', 0);
+        $wx_nickname = Request::instance()->param('wx_nickname', '');
+        $wx_account = Request::instance()->param('wx_account', '');
+        if($money < 1){
+            return json_encode(array('error_code'=>1,'data'=>'提现金额不能小于1元'));
+        }
+        if(floor($money) != $money){
+            return json_encode(array('error_code'=>1,'data'=>'提现金额必须是整数'));
+        }
+        if($wx_nickname == '' || $wx_account == ''){
+            return json_encode(array('error_code'=>1,'data'=>'微信信息未填写完整'));
+        }
+        $user = db("user")->where("uid=$uid")->find();
+        if($user['money'] < $money){
+            return json_encode(array('error_code'=>1,'data'=>'余额不足'));
+        }
+        $res = db("bonus_withdrow")->insert(['uid'=>$uid, 'money'=>$money, 'wx_nickname'=>$wx_nickname, 'wx_account'=>$wx_account, 'time'=>time()]);
+        db("user")->where("uid", $uid)->setDec('money', $money);
+        if($res){
+            return json_encode(array('error_code'=>0,'data'=>'提现申请提交成功'));
+        }else{
+            return json_encode(array('error_code'=>0,'data'=>'提现申请提交失败'));
+        }  
+    }
     
-    
-    
-    
-    
-    
+    public function sum_bonus(){
+        $uid=Request::instance()->header('uid');
+        $res = db("bonus_log")->where("u_id", $uid)->sum('bonus');
+        return json_encode(array('error_code'=>0,'data'=>$res));
+    }
     
     
     
