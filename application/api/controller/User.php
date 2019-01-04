@@ -666,6 +666,7 @@ class User extends BaseHome
     //获取用户信息
     public function make(){
         $code=input('code');
+      //  $data=array();
         $data['fid'] = Request::instance()->param('fid', 0);
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=wxcde9f11cf93da5ba&secret=8d6c6d3e4ff79f7008d51352d6ae0d4b&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
@@ -677,10 +678,10 @@ class User extends BaseHome
                 'data'=>'openID获取失败'
             ];
         }else{
-            $data=array();
+            
             $data['openid']=$openid;
-            $data['nickname']=\input('nickname');
-            $data['image']=\input('image');
+            $data['nickname']=Request::instance()->param('nickname', '');
+            $data['image']=Request::instance()->param('image', '');
             $data['time']=\time();
             $ret=db('user')->where(array('openid'=>$openid))->find();
             if($ret['openid']){
@@ -914,6 +915,59 @@ class User extends BaseHome
         $res = db("bonus_log")->where("u_id", $uid)->sum('bonus');
         return json_encode(array('error_code'=>0,'data'=>$res));
     }
+    public function change_success()
+    {
+        $did=input("did");
+        $re=db("mall_dd")->where("id=$did")->find();
+        $url=parent::getUrl();
+        if($re){
+            $re['mimage']=$url.$re['mimage'];
+            $arrs=array();
+            $aid=$re['a_id'];
+            $addr=db("addr")->where("aid=$aid")->find();
+            $arrs=[
+                'order'=>$re,
+                'addr'=>$addr
+            ];
+            $arr=[
+                'error_code'=>0,
+                'data'=>$arrs
+            ];
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'暂无数据'
+            ];
+        }
+        echo json_encode($arr);
+    }
+    public function shou()
+    {
+        $id=input('id');
+        $re=db("mall_dd")->where("id=$id")->find();
+        if($re){
+           $res=db("mall_dd")->where("id=$id")->setField("m_status",2);
+           if($res){
+            $arr=[
+                'error_code'=>0,
+                'data'=>'确认成功'
+            ]; 
+           }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'确认失败'
+            ];
+           }
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'确认失败'
+            ];
+        }
+        echo json_encode($arr);
+    }
+
+
     
     
     
