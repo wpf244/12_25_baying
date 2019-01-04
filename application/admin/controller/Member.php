@@ -242,13 +242,10 @@ class Member extends BaseAdmin
         $id=input('id');
         $re=db("user")->where("uid=$id")->find();
         if($re){
-            $data['pid']=$re['pid'];
+            
             $del=db("user")->where("uid=$id")->delete();
             if($del){
-                $res=db("user")->where("pid=$id")->select();
-                if($res){
-                    $resss=db("user")->where("pid=$id")->update($data);
-                }
+                
                 echo '0';
             }else{
                 echo '1';

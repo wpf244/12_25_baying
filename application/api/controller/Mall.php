@@ -57,6 +57,8 @@ class Mall extends BaseHome
     {
         $gid=\input('gid');
         $re=db("mall")->where("mid=$gid")->find();
+        $url=parent::geturl();
+        $re['mimage']=$url.$re['mimage'];
         if($re){
             $arr=[
                 'error_code'=>0,

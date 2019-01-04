@@ -75,56 +75,59 @@ class Pay extends Controller
                 $order_code= $result['out_trade_no'];
                 $re=db("car_dd")->where("code='$order_code'")->find();
                 $id=$re['did'];
-                $changestatus=db("car_dd")->where("did=$id")->setField("status",1);
-                if($changestatus){
-                    $pay = $re['pay'];
-                    $res = explode(",",$pay);
-                    foreach($res as $v){
-                        $dd = db("car_dd")->where("code='$v'")->find();
-                        $uid = $dd['uid'];
-                        $gid = $dd['gid'];
-                        $did = $dd['did'];
-                        $num = $dd['num'];
-                        $re_d = db("car_dd")->where("did=$did")->setField("status",1);
-                        
-                        //增加销量
-                        $sales=db("goods")->where("gid=$gid")->setInc("g_sales",$num);
-
-                        //减少库存
-                        db("goods")->where("gid=$gid")->setDec("g_kc",$num);
-
-                    }
-                    $moneys=$re['zprice'];
-                    //公益金
-                    $fund=($moneys/100*1);
-                    db("fund")->where("id=1")->setInc("money",$fund);
-
-                    //分红比例
-                    $cobber=db("cobber")->where("id=2")->find();
-                    $agio=$cobber['rabate'];
-                    //分红金额
-                    $money=($moneys/100*$agio);
-                    //查询平台总股数
-                    $shares=db("user")->sum("money"); 
-                    if($shares != 0){
-                        //每股应返多少
-                        $one=($money/$shares);
-                        //查询用户的总股数
-                        $user=db("user")->where("money > 0")->select();
-                        if($user){
-                            foreach($user as $k => $v){
-                                $new_shares=($v['money']*$one);
-                                db("user")->where("uid={$v['uid']}")->setInc("money",$new_shares);
-
-                                //增加分红日志
-                                $data['u_id']=$v['uid'];
-                                $data['money']=$new_shares;
-                                $data['time']=time();
-                                db("money_log")->insert($data);
+                if($re['status'] == 0){
+                    $changestatus=db("car_dd")->where("did=$id")->setField("status",1);
+                    if($changestatus){
+                        $pay = $re['pay'];
+                        $res = explode(",",$pay);
+                        foreach($res as $v){
+                            $dd = db("car_dd")->where("code='$v'")->find();
+                            $uid = $dd['uid'];
+                            $gid = $dd['gid'];
+                            $did = $dd['did'];
+                            $num = $dd['num'];
+                            $re_d = db("car_dd")->where("did=$did")->setField("status",1);
+                            
+                            //增加销量
+                            $sales=db("goods")->where("gid=$gid")->setInc("g_sales",$num);
+    
+                            //减少库存
+                            db("goods")->where("gid=$gid")->setDec("g_kc",$num);
+    
+                        }
+                        $moneys=$re['zprice'];
+                        //公益金
+                        $fund=($moneys/100*1);
+                        db("fund")->where("id=1")->setInc("money",$fund);
+    
+                        //分红比例
+                        $cobber=db("cobber")->where("id=2")->find();
+                        $agio=$cobber['rabate'];
+                        //分红金额
+                        $money=($moneys/100*$agio);
+                        //查询平台总股数
+                        $shares=db("user")->sum("money"); 
+                        if($shares != 0){
+                            //每股应返多少
+                            $one=($money/$shares);
+                            //查询用户的总股数
+                            $user=db("user")->where("money > 0")->select();
+                            if($user){
+                                foreach($user as $k => $v){
+                                    $new_shares=($v['money']*$one);
+                                    db("user")->where("uid={$v['uid']}")->setInc("money",$new_shares);
+    
+                                    //增加分红日志
+                                    $data['u_id']=$v['uid'];
+                                    $data['money']=$new_shares;
+                                    $data['time']=time();
+                                    db("money_log")->insert($data);
+                                }
                             }
                         }
                     }
                 }
+                
             }
         }
         
@@ -180,37 +183,40 @@ class Pay extends Controller
                 $order_code= $result['out_trade_no'];
                 $re=db("go_up")->where("code='$order_code'")->find();
                 $id=$re['go_id'];
-                $changestatus=db("info")->where("go_id=$id")->setField("status",1);
-
-                //改变用户等级
-                $uid=$re['u_id'];
-                $reu=db("user")->where("uid=$uid")->find();
-                $data['money']=($re['money']+$reu['money']);
-                $data['level']=$re['level'];
-                $res=db("user")->where("uid=$uid")->update($data);
-
-                //增加用户股份数量日志
-                $arrs['money']=$re['money'];
-                $arrs['u_id']=$uid;
-                $arrs['time']=time();
-                db("money_log")->insert($arrs);
-
-               //给上级会员5%奖励金
-               if($reu['fid'] != 0){
-                    $f_user = db("user")->where("uid", $reu['fid'])->find();
-                    if($f_user){
-                        //获取系统设置
-                        $bonus_set = db("cobber")->where("id", 3)->find();
-                        if($bonus_set){
-                            $bonus = $bonus_set/100;
-                        }else{
-                            $bonuse = 0.05;
+                if($re['status'] == 0){
+                    $changestatus=db("go_up")->where("go_id=$id")->setField("status",1);
+                   
+                    //改变用户等级
+                    $uid=$re['u_id'];
+                    $reu=db("user")->where("uid=$uid")->find();
+                    $data['money']=($re['agio']+$reu['money']);
+                    $data['level']=$re['level'];
+                    $res=db("user")->where("uid=$uid")->update($data);
+                    
+                    //增加用户股份数量日志
+                    $arrs['money']=$re['agio'];
+                    $arrs['u_id']=$uid;
+                    $arrs['time']=time();
+                    db("money_log")->insert($arrs);
+    
+                   //给上级会员5%奖励金
+                   if($reu['fid'] != 0){
+                        $f_user = db("user")->where("uid", $reu['fid'])->find();
+                        if($f_user){
+                            //获取系统设置
+                            $bonus_set = db("cobber")->where("id", 3)->find();
+                            if($bonus_set){
+                                $bonus = $bonus_set/100;
+                            }else{
+                                $bonuse = 0.05;
+                            }
+                            $add_bonus = $re['money']*$bonuse;
+                            db("user")->where("uid", $reu['fid'])->setInc('bonus', $add_bonus);
+                            db("bonus_log")->insert(['u_id'=>$f_user['uid'], 'bonus'=>$add_bonus, 'time'=>time(), 'status'=>1]);
                         }
-                        $add_bonus = $re['money']*$bonuse;
-                        db("user")->where("uid", $reu['fid'])->setInc('bonus', $add_bonus);
-                        db("bonus_log")->insert(['u_id'=>$f_user['uid'], 'bonus'=>$add_bonus, 'time'=>time(), 'status'=>1]);
-                    }
-               }
+                   }
+                }
+              
                
             }
         }

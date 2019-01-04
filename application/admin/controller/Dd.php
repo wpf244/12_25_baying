@@ -86,7 +86,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
         
-        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -175,7 +175,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
         
-        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=0 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -409,7 +409,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
         
-        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -498,7 +498,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=1 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -692,7 +692,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
         
-        $list=db("car_dd")->alias('a')->where("status=2 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=2 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -781,7 +781,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=2 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=2 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -935,7 +935,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=3 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=3 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1024,7 +1024,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=3 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=3 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -1178,7 +1178,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=4 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=4 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1267,7 +1267,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=4 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=4 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -1421,7 +1421,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1511,7 +1511,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1632,7 +1632,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -1789,7 +1789,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did asc")->select();
+        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
