@@ -727,13 +727,17 @@ class User extends BaseHome
         $user = db('user')->where('uid', $uid)->find();
         if($user['card'] != ''){
             $url = parent::getUrl().'/'.$user['card'];
+            $arr=[
+                'error_code'=>0,
+                'data'=>$url
+            ];
         }else{
-            $url = '';
+            $arr=[
+                'error_code'=>1,
+                'data'=>'重新获取'
+            ];
         }
-        $arr=[
-            'error_code'=>1,
-            'data'=>$url
-        ];
+       
         echo \json_encode($arr);
     }
 
@@ -765,7 +769,7 @@ class User extends BaseHome
             db('user')->where('uid', $uid)->update(['card'=>$path]);
             $url_res=parent::getUrl();
             $arr=[
-                'error_code'=>1,
+                'error_code'=>0,
                 'data'=>$url_res.'/'.$path,
                 'msg'=>'生成成功'
             ];
@@ -902,11 +906,12 @@ class User extends BaseHome
             return json_encode(array('error_code'=>1,'data'=>'余额不足'));
         }
         $res = db("bonus_withdrow")->insert(['uid'=>$uid, 'money'=>$money, 'wx_nickname'=>$wx_nickname, 'wx_account'=>$wx_account, 'time'=>time()]);
-        db("user")->where("uid", $uid)->setDec('money', $money);
+        db("user")->where("uid", $uid)->setDec('bonus', $money);
+        db("bonus_log")->insert(['u_id'=>$uid,'bonus'=>$money,'time'=>time(),'status'=>0]);
         if($res){
             return json_encode(array('error_code'=>0,'data'=>'提现申请提交成功'));
         }else{
-            return json_encode(array('error_code'=>0,'data'=>'提现申请提交失败'));
+            return json_encode(array('error_code'=>1,'data'=>'提现申请提交失败'));
         }  
     }
     
