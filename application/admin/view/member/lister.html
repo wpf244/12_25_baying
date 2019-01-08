@@ -71,8 +71,8 @@
                       </div>
                     </a></li>
                   </td>
-                  <td>{$v.money}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
-                  <td class="hidden-480">{$v.bonus}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_bonus({$v.uid})"></i></td>
+                  <td>{$v.money|intval}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_money({$v.uid})"></i></td>
+                  <td class="hidden-480">{$v.bonus|intval}<i class="ace-icon fa fa-pencil bigger-120" onclick="change_bonus({$v.uid})"></i></td>
                   <td class="hidden-480">
                       <i class="ace-icon fa fa-chevron-circle-down bigger-120" onclick="level_change('down', {$v.uid})"></i>
                       <span id="level{$v.uid}">

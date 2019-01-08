@@ -58,11 +58,11 @@ class Goods extends BaseHome
                 'data'=>'关键词为空'
             ];
         }else{
-            $res=db("goods")->field('gid,g_name,g_xprice,g_images,g_sort')->where('g_name','like',"%$key%")->where("g_up=1")->order(['g_sort asc','gid desc'])->select();
+            $res=db("goods")->field('gid,g_name,g_xprice,g_image,g_sort')->where('g_name','like',"%$key%")->where("g_up=1")->order(['g_sort asc','gid desc'])->select();
             if($res){
                 foreach ($res as $k=>$v){
                     $url=parent::getUrl();
-                    $res[$k]['g_images']=$url.$v['g_images'];
+                    $res[$k]['g_images']=$url.$v['g_image'];
                     $res[$k]['g_xprice']=sprintf("%.2f",$v['g_xprice']);
                 }
                 $arr=[
