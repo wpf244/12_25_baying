@@ -88,7 +88,7 @@ function Post($phone,$code){
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //如果需要将结果直接返回到变量里，那加上这句。
     $result = curl_exec($ch);
-  //  var_dump($result);exit;
+    // var_dump($result);exit;
 
 }
 function makeArr($data,&$res,$id=0,$j=0){

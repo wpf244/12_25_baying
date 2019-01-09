@@ -87,7 +87,7 @@
                   <th>订单号</th>
                   <th>订单总金额</th>
                   <th>下单时间</th>
-                  
+                  <th>支付方式</th>
                   <th>收货人信息</th>
                   <th style="border-right:#ddd solid 1px;">操作</th>
                 </tr>
@@ -98,8 +98,12 @@
                   <td><span class="badge badge-grey">{$v.did}</span></td>
                   <td>{$v.code}</td>
                   <td>{$v.zprice}</td>
+                 
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
-                  
+                  <td>
+                      {if condition="$v.pay_type eq 0"}微信支付 {else /}股金兑换{/if}
+  
+                    </td>
                   <th>
                                                          收货人姓名：{$v.username}<br>
                                                          收货人电话：{$v.phone}<br>

@@ -189,54 +189,89 @@ class Goods extends BaseHome
     public function detail()
     {
         $uid=Request::instance()->header('uid');
-        $url=parent::getUrl();
-        
-        $gid=\input('gid');
-        $re=db("goods")->field("gid,g_name,g_image,g_sales,g_content,g_xprice")->where("gid=$gid")->find();
-        
-        $re['g_image']=$url.$re['g_image'];
-        
-        //轮播图
-        $img=db("goods_img")->where("g_id=$gid and i_status=1")->select();
-        if($img){
-            foreach ($img as $k => $v){
-                $re['banner'][$k]=$url.$v['image'];
-            }
-        }else{
-            $re['banner']=array($re['g_image']);
-        }
+        if($uid){
+            $user=db("user")->where("uid=$uid")->find();
+            if($user){
 
-        //商品规格
-        $spec=db("goods_spec")->field("sid,s_name")->where("g_id=$gid and s_status=1")->select();
-        if($spec){
-            $re['spec']=$spec;
+                //根据会员等级判断打几折
+               
+                $level=$user['level'];
+                $cobber=db("cobber")->where("id=1")->find();
+                if($level == 0){
+                    $agio=$cobber['rabate'];
+                }
+                if($level == 1){
+                    $agio=$cobber['rabatey'];
+                }
+                if($level == 2){
+                    $agio=$cobber['rabatee'];
+                }
+
+                $url=parent::getUrl();
+        
+                $gid=\input('gid');
+                $re=db("goods")->field("gid,g_name,g_image,g_sales,g_content,g_xprice")->where("gid=$gid")->find();
+                
+                $re['g_image']=$url.$re['g_image'];
+             //   $re['g_xprice']=($re['g_xprice']);
+               $re['g_xprice']=($re['g_xprice']/100*$agio);
+                $re['g_xprice']=sprintf("%.2f",$re['g_xprice']);
+                
+                //轮播图
+                $img=db("goods_img")->where("g_id=$gid and i_status=1")->select();
+                if($img){
+                    foreach ($img as $k => $v){
+                        $re['banner'][$k]=$url.$v['image'];
+                    }
+                }else{
+                    $re['banner']=array($re['g_image']);
+                }
+        
+                //商品规格
+                $spec=db("goods_spec")->field("sid,s_name")->where("g_id=$gid and s_status=1")->select();
+                if($spec){
+                    $re['spec']=$spec;
+                }else{
+                    $re['spec']=array();
+                }
+                
+                //商品评价
+                $count=db("assess")->where("g_id=$gid and status=1")->count();
+                
+                $assess=db("assess")->alias('a')->field('number,addtime,content,image,nickname')->where("g_id=$gid and status=1")->join('user b','a.u_id = b.uid')->order('id desc')->limit(1)->find();
+                
+                if($assess){
+                    $assess['addtime']=\intval($assess['addtime']);
+                    $re['assess']=[
+                        'count'=>$count,
+                        'content'=>$assess
+                    ];
+                }else{
+                    $re['assess']=[
+                        'count'=>$count,
+                        'content'=>array()
+                    ];
+                }
+                
+                
+                $arr=[
+                    'error_code'=>0,
+                    'data'=>$re
+                ];
+            }else{
+                $arr=[
+                    'error_code'=>2,
+                    'data'=>'登录失效'
+                ]; 
+            }
+            
         }else{
-            $re['spec']=array();
+            $arr=[
+                'error_code'=>1,
+                'data'=>'没有登录'
+            ];
         }
         
-        //商品评价
-        $count=db("assess")->where("g_id=$gid and status=1")->count();
-        
-        $assess=db("assess")->alias('a')->field('number,addtime,content,image,nickname')->where("g_id=$gid and status=1")->join('user b','a.u_id = b.uid')->order('id desc')->limit(1)->find();
-        
-        if($assess){
-            $assess['addtime']=\intval($assess['addtime']);
-            $re['assess']=[
-                'count'=>$count,
-                'content'=>$assess
-            ];
-        }else{
-            $re['assess']=[
-                'count'=>$count,
-                'content'=>array()
-            ];
-        }
-        
-        
-        $arr=[
-            'error_code'=>0,
-            'data'=>$re
-        ];
         echo \json_encode($arr);
     }
     public function judge()
@@ -261,17 +296,49 @@ class Goods extends BaseHome
     //获取规格价格
     public function get_spec()
     {
-        $sid=input('sid');
-        $re=db("goods_spec")->field("s_xprice")->where("sid=$sid")->find();
-        if($re){
-            $arr=[
-                'error_code'=>0,
-                'data'=>$re
-            ];
+        $uid=Request::instance()->header('uid');
+        if($uid){
+            $user=db("user")->where("uid=$uid")->find();
+            if($user){
+
+                //根据会员等级判断打几折
+               
+                $level=$user['level'];
+                $cobber=db("cobber")->where("id=1")->find();
+                if($level == 0){
+                    $agio=$cobber['rabate']/100;
+                }
+                if($level == 1){
+                    $agio=$cobber['rabatey']/100;
+                }
+                if($level == 2){
+                    $agio=$cobber['rabatee']/100;
+                }
+                $sid=input('sid');
+                $re=db("goods_spec")->field("s_xprice")->where("sid=$sid")->find();
+             //   $re['s_xprice']=sprintf("%.2f",$re['s_xprice']);
+               $re['s_xprice']=sprintf("%.2f",$re['s_xprice']*$agio);
+                if($re){
+                    $arr=[
+                        'error_code'=>0,
+                        'data'=>$re
+                    ];
+                }else{
+                    $arr=[
+                        'error_code'=>1,
+                        'data'=>"参数错误"
+                    ];
+                }
+            }else{
+                $arr=[
+                    'error_code'=>2,
+                    'data'=>"登录失效"
+                ];
+            }
         }else{
             $arr=[
-                'error_code'=>1,
-                'data'=>"参数错误"
+                'error_code'=>3,
+                'data'=>"没有登录"
             ];
         }
         echo json_encode($arr);
@@ -450,23 +517,39 @@ class Goods extends BaseHome
         if($uid){
             $url=parent::getUrl();
             $gid=\input('gid');
+            $sid=input('sid');
             $num=\input('num');
             
-           $arrs=array();
+            $user=db("user")->where("uid=$uid")->find();
+            $level=$user['level'];
+            $cobber=db("cobber")->where("id=1")->find();
+            if($level == 0){
+                $agio=$cobber['rabate']/100;
+            }
+            if($level == 1){
+                $agio=$cobber['rabatey']/100;
+            }
+            if($level == 2){
+                $agio=$cobber['rabatee']/100;
+            }
+            
+            $arrs=array();
             //商品详情
             $re=\db("goods")->field('gid,g_name,g_image,g_xprice')->where("gid=$gid")->find();
+            $spec=db("goods_spec")->where("sid=$sid")->find();
+            $re['sid']=$sid;
+            $re['s_name']=$spec['s_name'];
+            
             $re['g_image']=$url.$re['g_image'];
-            $re['g_xprice']=sprintf("%.2f",$re['g_xprice']);
+            $re['g_xprice']=sprintf("%.2f",$spec['s_xprice']);
             $re['x_total']=($num*$re['g_xprice']);
             $re['x_total']=sprintf("%.2f",$re['x_total']);
             $re['num']=\intval($num);
-            //营业时间
-            $bus_time=db("lb")->where("fid=10")->find()['desc'];
-            $arrs['bus_time']=$bus_time;
             
+     
             //商品总金额
             $money=($re['g_xprice']*$num);
-            $arrs['money']=sprintf("%.2f",$money);
+            $arrs['money']=sprintf("%.2f",$money*$agio);
             $arrs['goods']=[$re];
             
             $arr=[
@@ -487,20 +570,29 @@ class Goods extends BaseHome
     {
        $uid=Request::instance()->header('uid');
        if($uid){
+            $user=db("user")->where("uid=$uid")->find();
+            $level=$user['level'];
+            $cobber=db("cobber")->where("id=1")->find();
+            if($level == 0){
+                $agio=$cobber['rabate']/100;
+            }
+            if($level == 1){
+                $agio=$cobber['rabatey']/100;
+            }
+            if($level == 2){
+                $agio=$cobber['rabatee']/100;
+            }
+
            $gid=input('gid');
+           $sid=input('sid');
            $num=input('num');
            $aid=\input('aid');
-           $p_type=\input('p_type');
-           if($p_type == 1){
-               $p_time=\input('p_time');
-           }else{
-               $p_time='';
-           }
+           
            $content=\input('content');
            $ob=db("car_dd");
-           $old_dd=db("car_dd")->where("gid=$gid and uid=$uid and status=0")->find();
+           $old_dd=db("car_dd")->where("gid=$gid and uid=$uid  and status=0")->find();
            if($old_dd){
-               $del=$ob->where("gid=$gid and uid=$uid and status=0")->delete();
+               $del=$ob->where("gid=$gid and uid=$uid  and status=0")->delete();
                $code=$old_dd['code'];
                $dels=$ob->where("pay='$code'")->find();
                if($dels){
@@ -508,18 +600,20 @@ class Goods extends BaseHome
                }
            }
            $good=db("goods")->where("gid=$gid")->find();
+           $spec=db("goods_spec")->where("sid=$sid")->find();
            
            $arr=array();
            $arr['gid']=$gid;
            $arr['uid']=$uid;
+           
+           $arr['s_name']=$spec['s_name'];
            $arr['num']=$num;
-           $arr['price']=$good['g_xprice'];
-           $arr['zprice']=($good['g_xprice']*$num);
+           $arr['price']=$spec['s_xprice'];
+           $arr['zprice']=($spec['s_xprice']*$num*$agio);
            $arr['g_name']=$good['g_name'];
            $arr['g_image']=$good['g_image'];
            $arr['a_id']=$aid;
-           $arr['p_type']=$p_type;
-           $arr['p_time']=$p_time;
+          
            $arr['code']="CK-".uniqid();
            $arr['time']=time();
            $arr['content']=$content;
@@ -528,16 +622,17 @@ class Goods extends BaseHome
            $all['gid']='0';
            $all['uid']=$uid;
            $all['num']=1;
-           $all['price']=$good['g_xprice'];
+           
+           $all['s_name']=$spec['s_name'];
+           $all['price']=$spec['s_xprice'];
            $all['g_name']=$good['g_name'];
            $all['g_image']=$good['g_image'];;
-           $all['zprice']=($good['g_xprice']*$num);
+           $all['zprice']=($spec['s_xprice']*$num*$agio);
            $all['code']="AK-".uniqid().'a';
            $all['pay']=$arr['code'];
            $all['time']=time();
            $all['a_id']=$aid;
-           $all['p_type']=$p_type;
-           $all['p_time']=$p_time;
+           
            $all['content']=$content;
            $rez=$ob->insert($all);
            

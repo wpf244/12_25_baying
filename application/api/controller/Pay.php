@@ -197,6 +197,7 @@ class Pay extends Controller
                     $arrs['money']=$re['agio'];
                     $arrs['u_id']=$uid;
                     $arrs['time']=time();
+                   
                     db("money_log")->insert($arrs);
     
                    //给上级会员5%奖励金
@@ -221,7 +222,83 @@ class Pay extends Controller
             }
         }
     }
-    
+    //使用佣金支付
+    public function pays_y()
+    {
+         $did=input('did');
+         $red=db("car_dd")->where("did=$did")->find();
+         if($red){
+            if($red['status'] == 0){
+                $uid=Request::instance()->header('uid');
+                $user=db("user")->where("uid=$uid")->find();
+                if($user){
+                     $money=$user['money'];
+                     $price=$red['zprice'];
+                     if($money >= $price){
+                        $datas['status']=1;
+                        $datas['pay_type']=1;
+                        $resd=db("car_dd")->where("did=$did")->update($datas);
+                        if($resd){
+                            $pay = $red['pay'];
+                            $res = explode(",",$pay);
+                            foreach($res as $v){
+                                $dd = db("car_dd")->where("code='$v'")->find();
+                                $uid = $dd['uid'];
+                                $gid = $dd['gid'];
+                                $did = $dd['did'];
+                                $num = $dd['num'];
+                                $re_d = db("car_dd")->where("did=$did")->update($datas);
+                                
+                                //增加销量
+                                $sales=db("goods")->where("gid=$gid")->setInc("g_sales",$num);
+        
+                                //减少库存
+                                db("goods")->where("gid=$gid")->setDec("g_kc",$num);
+        
+                            }
+                            $res=db("user")->where("uid=$uid")->setDec("money",$price);
+                            $arrs['money']=$price;
+                            $arrs['u_id']=$uid;
+                            $arrs['time']=time();
+                            $arrs['status']=0;
+                            db("money_log")->insert($arrs);
+                            $arr=[
+                                'error_code'=>0,
+                                'data'=>'支付成功'
+                            ]; 
+                        }else{
+                            $arr=[
+                                'error_code'=>5,
+                                'data'=>'支付失败'
+                            ]; 
+                        }
+
+                     }else{
+                        $arr=[
+                            'error_code'=>4,
+                            'data'=>'股金不足'
+                        ]; 
+                     }
+                }else{
+                    $arr=[
+                        'error_code'=>3,
+                        'data'=>'用户不存在'
+                    ]; 
+                }
+            }else{
+                $arr=[
+                    'error_code'=>2,
+                    'data'=>'订单状态异常'
+                ];
+            }
+         }else{
+             $arr=[
+                 'error_code'=>1,
+                 'data'=>'此订单不存在'
+             ];
+         }
+         echo json_encode($arr);
+    }
     
     
     
