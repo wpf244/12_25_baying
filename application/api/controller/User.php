@@ -153,10 +153,10 @@ class User extends BaseHome
         $uid=Request::instance()->header('uid');
         if($uid){
             $data=\input('post.');
-            $re=db("addr")->where("u_id=$uid")->find();
-            if(empty($re)){
-                $data['default']=1;
-            }
+            // $re=db("addr")->where("u_id=$uid")->find();
+            // if(empty($re)){
+            //     $data['default']=1;
+            // }
             $data['u_id']=$uid;
             $rea=db('addr')->insert($data);
             $aid = db('addr')->getLastInsID();
@@ -403,7 +403,7 @@ class User extends BaseHome
             }
             
             if($res){
-                $arrss=array();
+               
                 $url=parent::getUrl();
                 $arrs=array();
                 foreach ($res as $k => $v){
@@ -412,10 +412,13 @@ class User extends BaseHome
                     $arrs[$k]['time']=$v['time'];
                     $arrs[$k]['z_price']=sprintf("%.2f",$v['zprice']);
                     $arrs[$k]['status']=$v['status'];
+                    $arrs[$k]['uid']=$v['uid'];
                         
                     $pay=$v['pay'];
                     $pays=\explode(",", $pay);
+                    $arrss=array();
                     foreach ($pays as $kk => $vv){
+                        
                         $dd=db("car_dd")->where("code='$vv'")->find();
                         $arrss[$kk]['g_image']=$url.$dd['g_image'];
                         $arrss[$kk]['g_name']=$dd['g_name'];
@@ -423,8 +426,9 @@ class User extends BaseHome
                         $arrss[$kk]['num']=$dd['num'];
                         $arrss[$kk]['gid']=$dd['gid'];
                         $arrss[$kk]['x_total']=\sprintf("%.2f",($dd['num']*$dd['price']));
+                       
                     }
-                    
+                  //  var_dump($arrss);
                     $arrs[$k]['goods']=$arrss;
                 }
                 $arr=[
@@ -667,7 +671,10 @@ class User extends BaseHome
     public function make(){
         $code=input('code');
       //  $data=array();
-        $data['fid'] = Request::instance()->param('fid', 0);
+        $fid = Request::instance()->param('fid', 0);
+        if($fid != 0){
+            $data['fid']=$fid;
+        }
         $url="https://api.weixin.qq.com/sns/jscode2session?appid=wxcde9f11cf93da5ba&secret=8d6c6d3e4ff79f7008d51352d6ae0d4b&js_code=".$code."&grant_type=authorization_code";
         $results=json_decode(file_get_contents($url),true);
       //  \var_dump($results);exit;
@@ -917,7 +924,7 @@ class User extends BaseHome
     
     public function sum_bonus(){
         $uid=Request::instance()->header('uid');
-        $res = db("bonus_log")->where("u_id", $uid)->sum('bonus');
+        $res = db("bonus_log")->where("u_id = $uid and status=1")->sum('bonus');
         return json_encode(array('error_code'=>0,'data'=>$res));
     }
     public function change_success()

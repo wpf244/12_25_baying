@@ -201,19 +201,17 @@ class Pay extends Controller
                     db("money_log")->insert($arrs);
     
                    //给上级会员5%奖励金
-                   if($reu['fid'] != 0){
-                        $f_user = db("user")->where("uid", $reu['fid'])->find();
+                   $fid=$reu['fid'];
+                   if($fid != 0){
+                       
+                        $f_user = db("user")->where("uid=$fid")->find();
                         if($f_user){
                             //获取系统设置
-                            $bonus_set = db("cobber")->where("id", 3)->find();
-                            if($bonus_set){
-                                $bonus = $bonus_set/100;
-                            }else{
-                                $bonuse = 0.05;
-                            }
-                            $add_bonus = $re['money']*$bonuse;
-                            db("user")->where("uid", $reu['fid'])->setInc('bonus', $add_bonus);
-                            db("bonus_log")->insert(['u_id'=>$f_user['uid'], 'bonus'=>$add_bonus, 'time'=>time(), 'status'=>1]);
+                            $bonus_set = db("cobber")->where("id=3")->find();
+                            $bonuse = ($bonus_set['rabate']/100);
+                            $add_bonus = ($re['money']*$bonuse);
+                            db("user")->where("uid=$fid")->setInc('bonus', $add_bonus);
+                            db("bonus_log")->insert(['u_id'=>$fid, 'bonus'=>$add_bonus, 'time'=>time(), 'status'=>1]);
                         }
                    }
                 }

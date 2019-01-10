@@ -214,7 +214,7 @@ class Goods extends BaseHome
                 
                 $re['g_image']=$url.$re['g_image'];
              //   $re['g_xprice']=($re['g_xprice']);
-               $re['g_xprice']=($re['g_xprice']/100*$agio);
+                $re['g_xprice']=($re['g_xprice']/100*$agio);
                 $re['g_xprice']=sprintf("%.2f",$re['g_xprice']);
                 
                 //轮播图

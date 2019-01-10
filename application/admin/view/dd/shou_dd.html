@@ -90,6 +90,7 @@
                   <th>发货时间</th>
                   <th>支付方式</th>
                   <th>收货人信息</th>
+                  <th>订单备注</th>
                   <th style="border-right:#ddd solid 1px;">操作</th>
                 </tr>
                 </thead>
@@ -111,6 +112,7 @@
                                                          收货人电话：{$v.phone}<br>
                                                          收货人地址：{$v.addr}{$v.addrs}<br>
                   </th>
+                  <td>{$v.content}</td>
                   <td>
                     <a class="btn btn-xs btn-info" href="{:url('detail',array('id'=>$v['did']))}">
                       订单详情

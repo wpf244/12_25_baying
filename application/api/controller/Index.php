@@ -10,8 +10,13 @@ class Index extends BaseHome
         
         $url=parent::getUrl();
         //首页轮播
-        $lb=db("lb")->field('id,url,image,thumb')->where("fid=1 and status=1")->order(['sort asc','id desc'])->select();
+        $lb=db("lb")->field('id,url,image,thumb,desc')->where("fid=1 and status=1")->order(['sort asc','id desc'])->select();
         foreach ($lb as $k => $v){
+            if(empty($v['desc'])){
+                $lb[$k]['status']=0;
+            }else{
+                $lb[$k]['status']=1;
+            }
             $lb[$k]['image']=$url.$v['image'];
             unset($lb[$k]['thumb']);
         }
