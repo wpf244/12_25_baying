@@ -1421,7 +1421,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1511,7 +1511,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
+        $list=db("car_dd")->alias('a')->where("status=7 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->paginate(20,false,['query'=>request()->param()]);
         $this->assign("list",$list);
         $page=$list->render();
         $this->assign("page",$page);
@@ -1522,12 +1522,12 @@ class Dd extends BaseAdmin
     {
         $did=\input('id');
         $re=db("car_dd")->where("did=$did")->find();
-        if($re['status'] == 5){
-            $res=db("car_dd")->where("did=$did")->setField("status",6);
+        if($re['status'] == 6){
+            $res=db("car_dd")->where("did=$did")->setField("status",7);
             $pay=$re['pay'];
             $pays=\explode(",", $pay);
             foreach ($pays as $v){
-                db("car_dd")->where("code='$v'")->setField("status",6);
+                db("car_dd")->where("code='$v'")->setField("status",7);
             }
             $this->redirect("tui_dd");
         }else{
@@ -1632,7 +1632,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=5 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
+        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -1660,8 +1660,8 @@ class Dd extends BaseAdmin
             $objActSheet->setCellValue('D'.$k, $v['username']);
             $objActSheet->setCellValue('E'.$k, $v['phone']);
             $objActSheet->setCellValue('F'.$k, $v['addr'].$v['addrs']);
-            $objActSheet->setCellValue('G'.$k, \date("Y-m-d H:i:s",$v['t_time']));
-            $objActSheet->setCellValue('H'.$k, $v['cencal']);
+            $objActSheet->setCellValue('G'.$k, \date("Y-m-d H:i:s",$v['tui_time']));
+            $objActSheet->setCellValue('H'.$k, $v['tui_content']);
     
     
             // 表格高度
@@ -1789,7 +1789,7 @@ class Dd extends BaseAdmin
         $this->assign("addr",$addr);
         $this->assign("code",$code);
     
-        $list=db("car_dd")->alias('a')->where("status=6 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
+        $list=db("car_dd")->alias('a')->where("status=7 and gid=0")->where($map)->join("addr b","a.a_id = b.aid","LEFT")->order("did desc")->select();
         // var_dump($data);exit;
         vendor('PHPExcel.PHPExcel');//调用类库,路径是基于vendor文件夹的
         vendor('PHPExcel.PHPExcel.Worksheet.Drawing');
@@ -1817,8 +1817,8 @@ class Dd extends BaseAdmin
             $objActSheet->setCellValue('D'.$k, $v['username']);
             $objActSheet->setCellValue('E'.$k, $v['phone']);
             $objActSheet->setCellValue('F'.$k, $v['addr'].$v['addrs']);
-            $objActSheet->setCellValue('G'.$k, \date("Y-m-d H:i:s",$v['t_time']));
-            $objActSheet->setCellValue('H'.$k, $v['cencal']);
+            $objActSheet->setCellValue('G'.$k, \date("Y-m-d H:i:s",$v['tui_time']));
+            $objActSheet->setCellValue('H'.$k, $v['tui_content']);
     
     
             // 表格高度

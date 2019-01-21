@@ -978,6 +978,58 @@ class User extends BaseHome
         }
         echo json_encode($arr);
     }
+    public function tui()
+    {
+        $uid=Request::instance()->header('uid');
+        if($uid){
+            $did=input('did');
+            $re=db("car_dd")->where("uid=$uid and did=$did")->find();
+            if($re){
+                if($re['status'] != 0){
+                    $arr['tui_content']=input("content");
+                    $arr['tui_time']=time();
+                    $arr['status']=6;
+                    $pay=$re['pay'];
+                    $pays=explode(",",$pay);
+                    foreach($pays as $v){
+                        $red=db("car_dd")->where("code='$v'")->find();
+                        if($red){
+                            db("car_dd")->where("code='$v'")->update($arr);
+                        }
+                    }
+                    $res=db("car_dd")->where("uid=$uid and did=$did")->update($arr);
+                    if($res){
+                        $arr=[
+                            'error_code'=>0,
+                            'data'=>'申请提交成功'
+                        ];
+                    }else{
+                        $arr=[
+                            'error_code'=>4,
+                            'data'=>'申请提交失败'
+                        ];
+                    }
+                }else{
+                    $arr=[
+                        'error_code'=>3,
+                        'data'=>'未付款订单不能退货'
+                    ];  
+                }
+            }else{
+                $arr=[
+                    'error_code'=>2,
+                    'data'=>'没有此订单'
+                ]; 
+            }
+
+        }else{
+            $arr=[
+                'error_code'=>1,
+                'data'=>'没有登录'
+            ];
+        }
+        echo json_encode($arr);
+    }
 
 
     

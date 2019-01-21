@@ -101,8 +101,8 @@
                   <td>{$v.zprice}</td>
                   
                   <td>{$v.time|date="Y-m-d H:i:s",###}</td>
-                  <td>{$v.t_time|date="Y-m-d H:i:s",###}</td>
-                  <td>{$v.cencal}</td>
+                  <td>{$v.tui_time|date="Y-m-d H:i:s",###}</td>
+                  <td>{$v.tui_content}</td>
                   <th>
                                                          收货人姓名：{$v.username}<br>
                                                          收货人电话：{$v.phone}<br>
@@ -115,9 +115,9 @@
                <button class="btn btn-xs btn-success" type="button" onclick="change({$v.did})">
                      通过
                     </button> 
-                    <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.did})">
+                    <!-- <button class="btn btn-xs btn-danger" type="button" onclick="dels({$v.did})">
                    驳回
-                    </button> 
+                    </button>  -->
                   </td>
                 </tr>
     
